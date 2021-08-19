@@ -1,6 +1,6 @@
 ﻿USE [DBCONTROL]
 GO
-/****** Object:  StoredProcedure [dbo].[sp_crud_clasificacion]    Script Date: 17/8/2021 21:09:47 ******/
+/****** Object:  StoredProcedure [dbo].[sp_crud_movimiento]     ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
