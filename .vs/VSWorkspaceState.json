@@ -1,7 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\umgPagos"
+    "\\umgPagos",
+    "\\umgPagos\\Script"
   ],
+  "SelectedNode": "\\umgPagos\\Script\\sp_crud_movimiento.sql",
   "PreviewInSolutionExplorer": false
 }
