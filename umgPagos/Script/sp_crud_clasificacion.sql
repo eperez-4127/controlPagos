@@ -118,3 +118,60 @@ BEGIN
 		END	--DEL
 
 END
+
+--Trigger Insert
+CREATE TRIGGER trTableClasificacion_Insert
+ON CLASIFICACION
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO BITACORA
+        SELECT 'CLASIFICACION',
+        'INSERT',
+        'EDUARDO', 
+                GETDATE(), 
+                CONCAT(inserted.DESCRIPCION,',',inserted.ID_CLASIFICACION)
+        FROM inserted;
+END;
+
+--Trigger Delete
+CREATE TRIGGER trTableClasificacion_Delete 
+ON CLASIFICACION
+AFTER DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO BITACORA
+        SELECT 'CLASIFICACION',
+        'DELETED',
+        'EDUARDO', 
+                GETDATE(), 
+                CONCAT(deleted.DESCRIPCION,',',deleted.ID_CLASIFICACION)
+        FROM deleted;
+END;
+
+
+--Trigger Update
+CREATE TRIGGER trTableClasificacion_Update 
+ON CLASIFICACION
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO BITACORA
+        SELECT 'CLASIFICACION',
+        'UPDATE BEFORE',
+        'EDUARDO', 
+                GETDATE(), 
+                CONCAT('Antes de la actualización ',deleted.DESCRIPCION,',',deleted.ID_CLASIFICACION)
+        FROM deleted;
+    INSERT INTO BITACORA
+        SELECT 'CLASIFICACION',
+        'UPDATE AFTER',
+        'EDUARDO', 
+                GETDATE(), 
+                CONCAT('Despues de la actualización ',inserted.DESCRIPCION,',',inserted.ID_CLASIFICACION)
+        FROM inserted;
+END;
+GO
