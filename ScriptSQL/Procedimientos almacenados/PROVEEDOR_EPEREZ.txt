@@ -1,0 +1,182 @@
+-- ==============================================================================================
+-- PROPOSITO: CRUD COMPLETO TABLA PROVEEDORES
+--
+-- MODIFICACIONES:
+-- FECHA       QUIEN       MOTIVO
+-- ----------  ----------- ----------------------------------------------------------------------
+-- 16/08/2021  EPEREZ     CREACION DEL SP PARA LA ADMINISTRACION DE PROVEEDORES
+--
+-- ----------------------------------------------------------------------------------------------
+-- DESCRIPCIÓN
+-- ------ ---------------------------------------------------------------------------------------
+-- ADD	  AGREGA UN NUEVO PROVEEDOR
+-- LST    LISTA EL PROVEEDOR AL RECIBIR EL PARAMETRO DESCRIPCION O EL ID
+-- UPD	  MODIFICA A UN PROVEEDOR EN  ESPECIFICO
+-- LS1	  LISTA TODOS LOS PROVEEDORES
+-- DEL	  ELIIMINA AL PROVEEDOR
+-- ==============================================================================================
+
+USE DBCONTROL
+GO
+/****** Object:  StoredProcedure [dbo].[sp_dbcontrol_proveedor]    Script Date: 16/08/2021 07:51:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+--INSERT INTO CLASIFICACION (DESCRIPCION) VALUES ('A')
+--INSERT INTO CLASIFICACION (DESCRIPCION) VALUES ('B')
+--INSERT INTO CLASIFICACION (DESCRIPCION) VALUES ('C')
+--PRUEBA INSERT
+--EXEC sp_dbcontrol_proveedor @p_accion = 'ADD',@p_descripcion = 'proveedor7', @p_nit = '3564433-4', @p_plazo = 30,@p_id_clasificacion = 3
+--PRUEBA LISTAR
+--EXEC sp_dbcontrol_proveedor @p_accion = 'LS1'
+--PRUEBA LISTAR_CON_ID
+--EXEC sp_dbcontrol_proveedor @p_accion = 'LST',@p_id_proveedor = 3
+--PRUEBA ACTUALIZAR
+--EXEC sp_dbcontrol_proveedor @p_accion = 'UPD',@p_id_proveedor = 3,@p_descripcion = 'proveedor5', @p_nit = '356454-33544', @p_plazo = 40,@p_id_clasificacion = 2
+--PRUEBA ELIMINAR
+--EXEC sp_dbcontrol_proveedor @p_accion = 'DEL',@p_id_proveedor = 3
+
+--SELECT * FROM PROVEEDOR
+--SELECT * FROM BITACORA
+GO
+
+CREATE PROCEDURE [dbo].[sp_dbcontrol_proveedor]
+	--====================
+	--VARIABLES
+	--====================
+    @p_accion NVARCHAR(30)
+	,--VARIABLE DE TIPO DE ACCION A EJECUTAR
+	@p_id_proveedor INT = NULL
+	,--id para actualizar el usuario del usuario
+	@p_descripcion NVARCHAR(30) = NULL
+	,--nombre del usuario
+	@p_nit NVARCHAR(30) = NULL
+	,--contraseña del usuario
+	@p_plazo INT = NULL
+	,--estado del usuario
+	@p_id_clasificacion INT = NULL --estado del usuario
+	
+AS
+--EXEC PERSONAS.DBO.sp_per_busqueda_robot @i_accion = 'ADD', @i_descripcion = 'ACTIVO'
+BEGIN
+		SET NOCOUNT ON
+
+	-- ==========================
+	-- INSERTA UN NUEVO REGISTRO:
+	-- ==========================
+	IF (@p_accion = 'ADD')
+	BEGIN --ADD
+		-- ---------------------------------
+		-- VERIFICA QUE NO EXISTA EL PROVEEDOR:
+		-- ---------------------------------
+		IF (
+				SELECT COUNT(*)
+				FROM PROVEEDOR WITH (NOLOCK)
+				WHERE ID_PROVEEDOR = @p_id_proveedor
+					OR DESCRIPCION = @p_descripcion
+				) = 0
+		BEGIN --NO EXISTE
+			INSERT INTO PROVEEDOR (
+				DESCRIPCION,
+				NIT,
+				PLAZO,
+				ID_CLASIFICACION
+				)
+			VALUES (
+				@p_descripcion,
+                @p_nit,
+                @p_plazo,
+                @p_id_clasificacion
+				)
+		END --NO EXISTE
+		ELSE
+			SELECT 'El Codigo de Proveedor o el nombre ya existe' Mensaje
+
+	END --ADD
+		
+	-- ===================
+	-- LISTADO DE PROVEEDORES FILTRADO POR PROVEEDOR:
+	-- ===================
+	IF (@p_accion = 'LST')
+	BEGIN
+	     
+		SELECT a.ID_PROVEEDOR,
+			a.DESCRIPCION AS NOMBRE,
+			a.NIT AS NIT,
+			a.PLAZO PLAZO,
+			b.DESCRIPCION AS CLASIFICACION
+		FROM PROVEEDOR a WITH (NOLOCK)
+        JOIN CLASIFICACION b WITH (NOLOCK)
+        ON A.ID_CLASIFICACION = b.ID_CLASIFICACION
+		WHERE a.DESCRIPCION = @p_descripcion or a.ID_PROVEEDOR = @p_id_proveedor
+
+	END --LST
+	
+	-- ===================
+	-- LISTADO DE PROVEEDORES:
+	-- ===================
+	IF (@p_accion = 'LS1')
+
+		BEGIN --LS1
+
+		SELECT a.ID_PROVEEDOR,
+			a.DESCRIPCION AS NOMBRE,
+			a.NIT AS NIT,
+			a.PLAZO PLAZO,
+			b.DESCRIPCION AS CLASIFICACION
+		FROM PROVEEDOR a WITH (NOLOCK)
+        JOIN CLASIFICACION b WITH (NOLOCK)
+        ON A.ID_CLASIFICACION = b.ID_CLASIFICACION
+		
+
+	END --LS1
+		
+	-- =====================
+	-- MODIFICA UN REGISTRO:
+	-- =====================
+	IF (@p_accion = 'UPD')
+	BEGIN --UPD
+		-- -----------------------------------------------------------------
+		-- VERIFICA QUE EL CODIGO NOMBRE DE PROVEEDOR A MODIFICAR NO EXISTAN, 
+		-- Y SEAN DIFERENTES AL ID SELECCIONADO:
+		-- -----------------------------------------------------------------
+		IF (SELECT COUNT(*)
+				FROM PROVEEDOR a WITH (NOLOCK)
+				WHERE (a.ID_PROVEEDOR = @p_id_proveedor)
+				) = 0
+		BEGIN --No Existe
+				SELECT 'El proveedor que desea modificar no existe' Mensaje
+		END --No Existe
+				-- -------------------
+				-- EL PROVEEDOR NO EXISTE:
+				-- -------------------
+		ELSE
+		BEGIN
+			UPDATE PROVEEDOR
+			SET DESCRIPCION = @p_descripcion,
+				NIT = @p_nit,
+				PLAZO = @p_plazo,
+                ID_CLASIFICACION = @p_id_clasificacion
+			WHERE ID_PROVEEDOR = @p_id_proveedor
+
+			SELECT 'Proveedor modificado correctamente' Mensaje
+		END
+
+	END --UPD
+		
+	-- ====================
+	-- ELIMINA UN REGISTRO:
+	-- ====================
+	IF (@p_accion = 'DEL')
+
+		BEGIN --DEL
+
+			DELETE PROVEEDOR
+			 WHERE ID_PROVEEDOR = @p_id_proveedor
+			 
+			 SELECT 'Proveedor eliinado correctamente' Mensaje
+		END	--DEL
+
+END
+

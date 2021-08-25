@@ -1,0 +1,201 @@
+-- ==============================================================================================
+-- PROPOSITO: CRUD COMPLETO TABLA OPERACION
+--
+-- MODIFICACIONES:
+-- FECHA       QUIEN       MOTIVO
+-- ----------  ----------- ----------------------------------------------------------------------
+-- 16/08/2021  EPEREZ     CREACION DEL SP PARA LA ADMINISTRACION DE OPERACION
+--
+-- ----------------------------------------------------------------------------------------------
+-- DESCRIPCIÓN
+-- ------ ---------------------------------------------------------------------------------------
+-- ADD	  AGREGA UNA NUEVA OPERACION
+-- LST    LISTA TODAS LAS OPERACIONES
+-- UPD	  MODIFICA UNA OPERACION
+-- DEL	  ELIIMINA UNA OPERACION
+-- ==============================================================================================
+USE DBCONTROL
+GO
+
+/****** Object:  StoredProcedure [dbo].[sp_dbcontrol_proveedor]    Script Date: 16/08/2021 07:51:53 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+--PRUEBA INSERT
+--PRUEBA LISTAR
+--EXEC sp_dbcontrol_proveedor @p_accion = 'LS1'
+--PRUEBA LISTAR_CON_ID
+--EXEC sp_dbcontrol_proveedor @p_accion = 'LST',@p_id_proveedor = 3
+--PRUEBA ACTUALIZAR
+--EXEC sp_dbcontrol_proveedor @p_accion = 'UPD',@p_id_proveedor = 3,@p_descripcion = 'proveedor5', @p_nit = '356454-33544', @p_plazo = 40,@p_id_clasificacion = 2
+--PRUEBA ELIMINAR
+--EXEC sp_dbcontrol_proveedor @p_accion = 'DEL',@p_id_proveedor = 2
+ALTER PROCEDURE [dbo].[sp_dbcontrol_operacion_resta]
+	--====================
+	--VARIABLES
+	--====================
+	@p_accion NVARCHAR(5)
+	,@p_monto NUMERIC(10, 2) = NULL
+	,@p_fecha_compra DATE = NULL
+	,@p_fecha_pago DATE = NULL
+	,@p_dias INT = NULL
+	,@p_referencia NVARCHAR(45) = NULL
+	,@p_medio_pago NVARCHAR(45) = NULL
+	,@p_numero_documento NVARCHAR(45) = NULL
+	,@p_token NVARCHAR(45) = NULL
+	,@p_impuesto INT = NULL
+	,@p_isr INT = NULL
+	,@p_id_estado INT = NULL
+	,@p_id_movimiento INT = NULL
+	,@p_id_proveedor INT = NULL
+	,@p_saldo NUMERIC(10, 2) = NULL
+	,@p_operaciones INT = NULL
+	,@p_cuenta NUMERIC(10, 2) = NULL
+	--select substring(replace(newid(), '-', ''), 1, 15)
+AS
+--EXEC PERSONAS.DBO.sp_per_busqueda_robot @i_accion = 'ADD', @i_descripcion = 'ACTIVO'
+BEGIN
+	SET NOCOUNT ON
+
+	IF (@p_accion = 'ABN')
+	BEGIN --ADD
+		-- ---------------------------------
+		-- VERIFICA QUE NO EXISTA EL PROVEEDOR DENTRO DE LA TABLA:
+		-- ---------------------------------
+		BEGIN
+			-- ---------------------------------
+			-- GUARDA LA OPERACION
+			-- ---------------------------------
+			BEGIN
+				SET @p_dias = 0
+				SET @p_token = (
+						SELECT substring(replace(newid(), '-', ''), 1, 15)
+						)
+				SET @p_id_estado = 4
+				SET @p_saldo = (
+						SELECT TOP 1 SALDO
+						FROM RESUMEN
+						WHERE ID_PROVEEDOR = @p_id_proveedor
+						)
+				SET @p_operaciones = 3
+
+				IF @p_operaciones = 1
+				BEGIN
+					SET @p_id_movimiento = 1;
+
+					PRINT N'C';
+				END
+				ELSE
+				BEGIN
+					IF @p_operaciones = 3
+					BEGIN
+						SET @p_id_movimiento = 3;
+
+						PRINT N'A';
+
+						UPDATE RESUMEN
+						SET SALDO = (@p_saldo - @p_monto)
+						WHERE ID_PROVEEDOR = @p_id_proveedor;
+
+						SET @p_cuenta = (
+								SELECT SALDO
+								FROM CUENTA
+								);
+
+						UPDATE CUENTA
+						SET SALDO = (@p_cuenta - @p_monto);
+					END
+					ELSE
+					BEGIN
+						SET @p_operaciones = 2;
+
+						PRINT N'B';
+
+						UPDATE RESUMEN
+						SET SALDO = (@p_saldo)
+						WHERE ID_PROVEEDOR = @p_id_proveedor
+					END
+
+					INSERT INTO OPERACION (
+						MONTO
+						,FECHA_COMPRA
+						,FECHA_PAGO
+						,DIAS
+						,REFERENCIA
+						,MEDIO_PAGO
+						,NUM_DOCUMENTO
+						,TOKEN
+						,IMPUESTO_IVA
+						,IMPUESTO_ISR
+						,ID_ESTADO
+						,ID_MOVIMIENTO
+						,ID_PROVEEDOR
+						)
+					VALUES (
+						@p_monto
+						,@p_fecha_compra
+						,@p_fecha_pago
+						,@p_dias
+						,@p_referencia
+						,@p_medio_pago
+						,@p_numero_documento
+						,@p_token
+						,@p_impuesto
+						,@p_isr
+						,@p_id_estado
+						,@p_id_movimiento
+						,@p_id_proveedor
+						)
+				END
+			END --ADD
+		END
+	END
+
+	IF (@p_accion = 'LST')
+	BEGIN --ADD
+		SELECT PR.ID_PROVEEDOR
+			,PR.DESCRIPCION
+			,PR.NIT
+            ,RS.SALDO
+		FROM RESUMEN AS RS WITH (NOLOCK)
+		INNER JOIN PROVEEDOR AS PR WITH (NOLOCK) ON PR.ID_PROVEEDOR = RS.ID_PROVEEDOR
+	END
+    	IF (@p_accion = 'LSO')
+		BEGIN --ADD
+			SELECT OP.ID_OPERACION
+				,OP.FECHA_COMPRA
+				,OP.FECHA_PAGO
+				,OP.REFERENCIA
+				,OP.NUM_DOCUMENTO
+				,OP.TOKEN
+				,OP.IMPUESTO_IVA
+				,OP.IMPUESTO_ISR
+				,MV.DESCRIPCION AS MOVIMIENTO
+				,PR.DESCRIPCION AS PROVEEDOR
+				,DATEDIFF(D, OP.FECHA_PAGO, GETDATE()) AS DIAS_RESTANTES
+				,(
+					CASE 
+						WHEN CONVERT(INT, DATEDIFF(D,OP.FECHA_PAGO,GETDATE())) >= 30 and mv.ID_MOVIMIENTO in (2,3)
+							THEN 'MUY RETRASADO'
+						WHEN CONVERT(INT, DATEDIFF(D,OP.FECHA_PAGO,GETDATE())) < 29 and mv.ID_MOVIMIENTO in (2,3)
+							AND CONVERT(INT, DATEDIFF(D,OP.FECHA_PAGO,GETDATE()))>= 15 and mv.ID_MOVIMIENTO in (2,3)
+							THEN 'ATRASADO'
+						WHEN CONVERT(INT, DATEDIFF(D,OP.FECHA_PAGO,GETDATE())) < 15 and mv.ID_MOVIMIENTO in (2,3)
+							AND CONVERT(INT, DATEDIFF(D,OP.FECHA_PAGO,GETDATE())) >= 0 and mv.ID_MOVIMIENTO in (2,3)
+							THEN 'EN FECHA'
+						WHEN CONVERT(INT, DATEDIFF(D,OP.FECHA_PAGO,GETDATE())) < 0 and mv.ID_MOVIMIENTO in (2,3)
+							THEN 'POR VENCER'
+						ELSE 'NO DEFINIDO'
+						END
+					) AS ESTADO
+                    ,op.MONTO as MONTO
+			FROM OPERACION AS OP WITH (NOLOCK)
+			INNER JOIN PROVEEDOR AS PR WITH (NOLOCK)
+				ON PR.ID_PROVEEDOR = OP.ID_PROVEEDOR
+			INNER JOIN MOVIMIENTO AS MV WITH (NOLOCK)
+				ON MV.ID_MOVIMIENTO = OP.ID_MOVIMIENTO
+		END
+END
