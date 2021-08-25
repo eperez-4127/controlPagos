@@ -133,7 +133,7 @@ AS
                 'INSERT',
                 'DENNIS', 
                        GETDATE(), 
-                       CONCAT(inserted.DESCRIPCION,',',inserted.NIT,',',INSERTED.PLAZO,',',inserted.ID_CLASIFICACION)
+                       CONCAT(inserted.DESCRIPCION,',',inserted.ID_MOVIMIENTO)
                 FROM inserted;
      END;
 
@@ -149,7 +149,7 @@ AS
                 'DELETED',
                 'DENNIS', 
                        GETDATE(), 
-                       CONCAT(deleted.DESCRIPCION,',',deleted.NIT,',',deleted.PLAZO,',',deleted.ID_CLASIFICACION)
+                       CONCAT(deleted.DESCRIPCION,',',deleted.ID_MOVIMIENTO)
                 FROM deleted;
      END;
 --Trigger Update
@@ -164,14 +164,14 @@ AS
                 'UPDATE BEFORE',
                 'DENNIS', 
                        GETDATE(), 
-                       CONCAT('Antes de la actualización ',deleted.DESCRIPCION,',',deleted.NIT,',',deleted.PLAZO,',',deleted.ID_CLASIFICACION)
+                       CONCAT('Antes de la actualización ',deleted.DESCRIPCION,',',deleted.ID_MOVIMIENTO)
                 FROM deleted;
          INSERT INTO BITACORA
                 SELECT 'PROVEEDOR',
                 'UPDATE AFTER',
                 'DENNIS', 
                        GETDATE(), 
-                       CONCAT('Despues de la actualización ',inserted.DESCRIPCION,',',inserted.NIT,',',inserted.PLAZO,',',inserted.ID_CLASIFICACION)
+                       CONCAT('Despues de la actualización ',inserted.DESCRIPCION,',',inserted.ID_MOVIMIENTO)
                 FROM inserted;
      END;
 GO
