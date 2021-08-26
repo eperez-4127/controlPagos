@@ -123,7 +123,7 @@ END
 --TRIGGERS
 --Trigger Insert
 CREATE TRIGGER trTableMovimiento_Insert 
- ON PROVEEDOR
+ ON MOVIMIENTO
 AFTER INSERT
 AS
      BEGIN
@@ -139,7 +139,7 @@ AS
 
 --Trigger Delete
 CREATE TRIGGER trTableMovimiento_Delete 
-ON PROVEEDOR
+ON MOVIMIENTO
 AFTER DELETE
 AS
      BEGIN
@@ -154,7 +154,7 @@ AS
      END;
 --Trigger Update
 CREATE TRIGGER trTableMovimiento_Update 
-ON PROVEEDOR
+ON MOVIMIENTO
 AFTER UPDATE
 AS
      BEGIN
