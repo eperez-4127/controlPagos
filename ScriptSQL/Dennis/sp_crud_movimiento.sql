@@ -122,7 +122,7 @@ END
 
 --TRIGGERS
 --Trigger Insert
-CREATE TRIGGER trTableProveedor_Insert 
+CREATE TRIGGER trTableMovimiento_Insert 
  ON PROVEEDOR
 AFTER INSERT
 AS
@@ -133,12 +133,12 @@ AS
                 'INSERT',
                 'DENNIS', 
                        GETDATE(), 
-                       CONCAT(inserted.DESCRIPCION,',',inserted.ID_MOVIMIENTO)
+                       inserted.DESCRIPCION
                 FROM inserted;
      END;
 
 --Trigger Delete
-CREATE TRIGGER trTableProveedor_Delete 
+CREATE TRIGGER trTableMovimiento_Delete 
 ON PROVEEDOR
 AFTER DELETE
 AS
@@ -149,11 +149,11 @@ AS
                 'DELETED',
                 'DENNIS', 
                        GETDATE(), 
-                       CONCAT(deleted.DESCRIPCION,',',deleted.ID_MOVIMIENTO)
+                       deleted.DESCRIPCION
                 FROM deleted;
      END;
 --Trigger Update
-CREATE TRIGGER trTableProveedor_Update 
+CREATE TRIGGER trTableMovimiento_Update 
 ON PROVEEDOR
 AFTER UPDATE
 AS
@@ -164,14 +164,14 @@ AS
                 'UPDATE BEFORE',
                 'DENNIS', 
                        GETDATE(), 
-                       CONCAT('Antes de la actualización ',deleted.DESCRIPCION,',',deleted.ID_MOVIMIENTO)
+                       CONCAT('Antes de la actualización ',deleted.DESCRIPCION)
                 FROM deleted;
          INSERT INTO BITACORA
                 SELECT 'PROVEEDOR',
                 'UPDATE AFTER',
                 'DENNIS', 
                        GETDATE(), 
-                       CONCAT('Despues de la actualización ',inserted.DESCRIPCION,',',inserted.ID_MOVIMIENTO)
+                       CONCAT('Despues de la actualización ',inserted.DESCRIPCION)
                 FROM inserted;
      END;
 GO
